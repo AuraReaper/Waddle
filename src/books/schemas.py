@@ -18,6 +18,9 @@ class Book(BaseModel):
     language: str
     created_at: datetime
     update_at: datetime
+    
+    class Config:
+        from_attributes = True  # Allows creating from SQLAlchemy models
 
 
 class BookDetailModel(Book):

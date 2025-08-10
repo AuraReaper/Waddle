@@ -14,5 +14,5 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.10.1",
     "pyjwt[crypto]>=2.10.1",
-    "sqlmodel>=0.0.24",
+    "sqlalchemy[asyncio]>=2.0.0",
 ]

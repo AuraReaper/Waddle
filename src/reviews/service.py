@@ -2,8 +2,8 @@ import logging
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
-from sqlmodel import desc, select
-from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.service import UserService
 from src.books.service import BookService
@@ -61,16 +61,16 @@ class ReviewService:
     async def get_review(self, review_uid: str, session: AsyncSession):
         statement = select(Review).where(Review.uid == review_uid)
 
-        result = await session.exec(statement)
+        result = await session.execute(statement)
 
-        return result.first()
+        return result.scalars().first()
 
     async def get_all_reviews(self, session: AsyncSession):
         statement = select(Review).order_by(desc(Review.created_at))
 
-        result = await session.exec(statement)
+        result = await session.execute(statement)
 
-        return result.all()
+        return result.scalars().all()
 
     async def delete_review_to_from_book(
         self, review_uid: str, user_email: str, session: AsyncSession
@@ -85,6 +85,6 @@ class ReviewService:
                 status_code=status.HTTP_403_FORBIDDEN,
             )
 
-        session.add(review)
+        session.delete(review)
 
         await session.commit()

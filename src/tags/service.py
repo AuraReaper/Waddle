@@ -1,7 +1,7 @@
 from fastapi import status
 from fastapi.exceptions import HTTPException
-from sqlmodel import desc, select
-from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.books.service import BookService
 from src.db.models import Tag
@@ -23,9 +23,9 @@ class TagService:
 
         statement = select(Tag).order_by(desc(Tag.created_at))
 
-        result = await session.exec(statement)
+        result = await session.execute(statement)
 
-        return result.all()
+        return result.scalars().all()
 
     async def add_tags_to_book(
         self, book_uid: str, tag_data: TagAddModel, session: AsyncSession
@@ -38,11 +38,11 @@ class TagService:
             raise HTTPException(status_code=404, detail="Book not found")
 
         for tag_item in tag_data.tags:
-            result = await session.exec(
+            result = await session.execute(
                 select(Tag).where(Tag.name == tag_item.name)
             )
 
-            tag = result.one_or_none()
+            tag = result.scalars().one_or_none()
             if not tag:
                 tag = Tag(name=tag_item.name)
 
@@ -59,18 +59,18 @@ class TagService:
 
         statement = select(Tag).where(Tag.uid == tag_uid)
 
-        result = await session.exec(statement)
+        result = await session.execute(statement)
 
-        return result.first()
+        return result.scalars().first()
 
     async def add_tag(self, tag_data: TagCreateModel, session: AsyncSession):
         """Create a tag"""
 
         statement = select(Tag).where(Tag.name == tag_data.name)
 
-        result = await session.exec(statement)
+        result = await session.execute(statement)
 
-        tag = result.first()
+        tag = result.scalars().first()
 
         if tag:
             raise HTTPException(
@@ -107,13 +107,13 @@ class TagService:
     async def delete_tag(self, tag_uid: str, session: AsyncSession):
         """Delete a tag"""
 
-        tag = self.get_tag_by_uid(tag_uid,session)
+        tag = await self.get_tag_by_uid(tag_uid,session)
 
         if not tag:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Tag does not exist"
             )
 
-        await session.delete(tag)
+        session.delete(tag)
 
         await session.commit()

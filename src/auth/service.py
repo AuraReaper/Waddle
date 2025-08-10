@@ -1,17 +1,17 @@
-from .models import User
+from src.db.models import User
 from .schemas import UserCreateModel
 from .utils import generate_password_hash
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 
 class UserService:
     async def get_user_by_email(self, email: str, session: AsyncSession):
         statement = select(User).where(User.email == email)
 
-        result = await session.exec(statement)
+        result = await session.execute(statement)
 
-        user = result.first()
+        user = result.scalars().first()
 
         return user
 
