@@ -1,0 +1,18 @@
+[project]
+name = "waddle"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aioredis>=2.0.1",
+    "alembic>=1.16.4",
+    "asyncpg>=0.30.0",
+    "fastapi[all]>=0.116.1",
+    "greenlet>=3.2.4",
+    "passlib>=1.7.4",
+    "psycopg2-binary>=2.9.10",
+    "pydantic-settings>=2.10.1",
+    "pyjwt[crypto]>=2.10.1",
+    "sqlmodel>=0.0.24",
+]
