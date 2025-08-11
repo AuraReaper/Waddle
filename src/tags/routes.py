@@ -42,7 +42,7 @@ async def add_tag(
     "/book/{book_uid}/tags", response_model=Book, dependencies=[user_role_checker]
 )
 async def add_tags_to_book(
-    book_uid: str, tag_data: TagCreateModel, session: AsyncSession = Depends(get_session)
+    book_uid: str, tag_data: TagAddModel, session: AsyncSession = Depends(get_session)
 ) -> Book:
 
     book_with_tag = await tag_service.add_tags_to_book(

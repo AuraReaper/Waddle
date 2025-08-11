@@ -4,12 +4,13 @@ from src.auth.routes import auth_router
 from src.reviews.routes import review_router
 from src.tags.routes import tags_router
 from contextlib import asynccontextmanager
-from src.db.main import initdb
+from src.db.main import init_db
+from src.middleware import register_middleware
 
 #the lifespan event
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await initdb()
+    await init_db()
     yield
     print("server is stopping")
 
@@ -23,6 +24,8 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan
 )
+
+register_middleware(app)
 
 app.include_router(book_router, prefix=f"/api/{version}/books", tags=["books"])
 app.include_router(auth_router, prefix=f"/api/{version}/auth", tags=["auth"])

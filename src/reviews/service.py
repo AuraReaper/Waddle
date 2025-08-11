@@ -2,8 +2,8 @@ import logging
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
-from sqlalchemy import desc, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import desc, select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.auth.service import UserService
 from src.books.service import BookService
@@ -29,8 +29,6 @@ class ReviewService:
                 email=user_email, session=session
             )
             review_data_dict = review_data.model_dump()
-            new_review = Review(**review_data_dict)
-
             if not book:
                 raise HTTPException(
                     detail="Book not found", status_code=status.HTTP_404_NOT_FOUND
@@ -38,12 +36,10 @@ class ReviewService:
 
             if not user:
                 raise HTTPException(
-                    detail="Book not found", status_code=status.HTTP_404_NOT_FOUND
+                    detail="User not found", status_code=status.HTTP_404_NOT_FOUND
                 )
 
-            new_review.user = user
-
-            new_review.book = book
+            new_review = Review(**review_data_dict, user=user, book=book)
 
             session.add(new_review)
 
@@ -54,23 +50,23 @@ class ReviewService:
         except Exception as e:
             logging.exception(e)
             raise HTTPException(
-                detail="Oops... somethig went wrong!",
+                detail="Oops... something went wrong!",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
     async def get_review(self, review_uid: str, session: AsyncSession):
         statement = select(Review).where(Review.uid == review_uid)
 
-        result = await session.execute(statement)
+        result = await session.exec(statement)
 
-        return result.scalars().first()
+        return result.first()
 
     async def get_all_reviews(self, session: AsyncSession):
         statement = select(Review).order_by(desc(Review.created_at))
 
-        result = await session.execute(statement)
+        result = await session.exec(statement)
 
-        return result.scalars().all()
+        return result.all()
 
     async def delete_review_to_from_book(
         self, review_uid: str, user_email: str, session: AsyncSession
@@ -79,7 +75,7 @@ class ReviewService:
 
         review = await self.get_review(review_uid, session)
 
-        if not review or (review.user is not user):
+        if not review or (review.user != user):
             raise HTTPException(
                 detail="Cannot delete this review",
                 status_code=status.HTTP_403_FORBIDDEN,
